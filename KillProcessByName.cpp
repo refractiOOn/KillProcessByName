@@ -55,7 +55,7 @@ void KillProcessByName(DWORD processID, TCHAR name[])
 
 int main()
 {
-	DWORD processes[1024], bytesReturned, processesAmount;
+    DWORD processes[1024], bytesReturned, processesAmount;
     TCHAR processToKill[] = L"Evernote.exe";
 
 	if (!EnumProcesses(processes, sizeof(processes), &bytesReturned))
