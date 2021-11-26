@@ -67,9 +67,9 @@ int main()
 
 	for (size_t i = 0; i < processesAmount; ++i)
 	{
-		if (processes[i] != 0)
-		{
+        if (processes[i] != 0)
+        {
             KillProcessByName(processes[i], processToKill);
-		}
+        }
 	}
 }
