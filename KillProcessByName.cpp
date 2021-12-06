@@ -3,10 +3,15 @@
 #include <stdio.h>
 #include <psapi.h>
 
-void KillProcessByName(DWORD processID, TCHAR name[])
+bool KillProcessByName(DWORD processID, TCHAR name[])
 {
     TCHAR processName[] = L"<unknown>";
     HANDLE process = OpenProcess(PROCESS_ALL_ACCESS, FALSE, processID);
+
+    if (!process || !processID)
+    {
+        return 0;
+    }
 
     if (process)
     {
@@ -37,32 +42,33 @@ void KillProcessByName(DWORD processID, TCHAR name[])
     }
     if (neededProcess)
     {
-        BOOL endProcess = TerminateProcess(
-            process,
-            1
-        );
+        BOOL endProcess = TerminateProcess(process, 1);
         if (!endProcess)
         {
-            std::cout << "Could not terminate process with the chosen name" << std::endl;
-        }
-        else
-        {
-            std::cout << "Process terminated successfully" << std::endl;
+            return 0;
         }
     }
 
-    CloseHandle(process);
+    if (process)
+    {
+        CloseHandle(process);
+    }
+
+    return 1;
 }
 
 int main()
 {
     DWORD processes[1024], bytesReturned, processesAmount;
     TCHAR processToKill[MAX_PATH];
+    bool result = false;
+
     std::wcin >> processToKill;
 
     if (!EnumProcesses(processes, sizeof(processes), &bytesReturned))
     {
         std::cout << "Could not get processes ids" << std::endl;
+        return 0;
     }
 
     processesAmount = bytesReturned / sizeof(DWORD);
@@ -71,7 +77,16 @@ int main()
 	{
         if (processes[i] != 0)
         {
-            KillProcessByName(processes[i], processToKill);
+            result = KillProcessByName(processes[i], processToKill);
         }
 	}
+
+    if (result)
+    {
+        std::cout << "Process terminated successfully" << std::endl;
+    }
+    else
+    {
+        std::cout << "Something went wrong" << std::endl;
+    }
 }
