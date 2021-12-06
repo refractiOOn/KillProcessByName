@@ -1,13 +1,19 @@
+#include <iostream>
 #include <Windows.h>
 #include <stdio.h>
 #include <psapi.h>
 
-void KillProcessByName(DWORD processID, TCHAR name[])
+bool KillProcessByName(DWORD processID, TCHAR name[])
 {
     TCHAR processName[] = L"<unknown>";
     HANDLE process = OpenProcess(PROCESS_ALL_ACCESS, FALSE, processID);
 
-    if (process != NULL)
+    if (!process || !processID)
+    {
+        return 0;
+    }
+
+    if (process)
     {
         HMODULE mod;
         DWORD cbNeeded;
@@ -21,7 +27,7 @@ void KillProcessByName(DWORD processID, TCHAR name[])
     }
 
     bool neededProcess = false;
-    for (size_t i = 0; i < sizeof(name) / (sizeof(TCHAR) * 2); ++i)
+    for (size_t i = 0; i < sizeof(processName) / (sizeof(TCHAR) * 2); ++i)
     {
         if (name[i] != processName[i])
         {
@@ -36,40 +42,51 @@ void KillProcessByName(DWORD processID, TCHAR name[])
     }
     if (neededProcess)
     {
-        BOOL endProcess = TerminateProcess(
-            process,
-            1
-        );
+        BOOL endProcess = TerminateProcess(process, 1);
         if (!endProcess)
         {
-            printf("Could not terminate process with the chosen name\n");
-        }
-        else
-        {
-            printf("Process terminated successfully\n");
+            return 0;
         }
     }
 
-    CloseHandle(process);
+    if (process)
+    {
+        CloseHandle(process);
+    }
+
+    return 1;
 }
 
 int main()
 {
-	DWORD processes[1024], bytesReturned, processesAmount;
-    TCHAR processToKill[] = L"Evernote.exe";
+    DWORD processes[1024], bytesReturned, processesAmount;
+    TCHAR processToKill[MAX_PATH];
+    bool result = false;
 
-	if (!EnumProcesses(processes, sizeof(processes), &bytesReturned))
-	{
-        printf("Could not get processes ids");
-	}
+    std::wcin >> processToKill;
 
-	processesAmount = bytesReturned / sizeof(DWORD);
+    if (!EnumProcesses(processes, sizeof(processes), &bytesReturned))
+    {
+        std::cout << "Could not get processes ids" << std::endl;
+        return 0;
+    }
+
+    processesAmount = bytesReturned / sizeof(DWORD);
 
 	for (size_t i = 0; i < processesAmount; ++i)
 	{
-		if (processes[i] != 0)
-		{
-            KillProcessByName(processes[i], processToKill);
-		}
+        if (processes[i] != 0)
+        {
+            result = KillProcessByName(processes[i], processToKill);
+        }
 	}
+
+    if (result)
+    {
+        std::cout << "Process terminated successfully" << std::endl;
+    }
+    else
+    {
+        std::cout << "Something went wrong" << std::endl;
+    }
 }
