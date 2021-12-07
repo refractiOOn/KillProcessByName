@@ -1,4 +1,5 @@
-#include <Windows.h>
+#include <iostream>
+#include <windows.h>
 #include <stdio.h>
 #include <psapi.h>
 
@@ -56,7 +57,8 @@ void KillProcessByName(DWORD processID, TCHAR name[])
 int main()
 {
     DWORD processes[1024], bytesReturned, processesAmount;
-    TCHAR processToKill[] = L"Evernote.exe";
+    TCHAR processToKill[MAX_PATH];
+    std::wcin >> processToKill;
 
     if (!EnumProcesses(processes, sizeof(processes), &bytesReturned))
     {
