@@ -32,7 +32,7 @@ void KillProcessByName(DWORD processID, TCHAR name[])
         {
             neededProcess = true;
         }
-        
+
     }
     if (neededProcess)
     {
@@ -55,21 +55,21 @@ void KillProcessByName(DWORD processID, TCHAR name[])
 
 int main()
 {
-	DWORD processes[1024], bytesReturned, processesAmount;
+    DWORD processes[1024], bytesReturned, processesAmount;
     TCHAR processToKill[] = L"Evernote.exe";
 
-	if (!EnumProcesses(processes, sizeof(processes), &bytesReturned))
-	{
+    if (!EnumProcesses(processes, sizeof(processes), &bytesReturned))
+    {
         printf("Could not get processes ids");
-	}
+    }
 
-	processesAmount = bytesReturned / sizeof(DWORD);
+    processesAmount = bytesReturned / sizeof(DWORD);
 
-	for (size_t i = 0; i < processesAmount; ++i)
-	{
-		if (processes[i] != 0)
-		{
+    for (size_t i = 0; i < processesAmount; ++i)
+    {
+        if (processes[i] != 0)
+        {
             KillProcessByName(processes[i], processToKill);
-		}
-	}
+        }
+    }
 }
