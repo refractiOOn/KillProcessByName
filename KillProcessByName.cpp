@@ -3,51 +3,36 @@
 #include <stdio.h>
 #include <psapi.h>
 
-void KillProcessByName(DWORD processID, const wchar_t name[])
+void KillProcessByName(DWORD processID, const std::wstring& name)
 {
-    wchar_t processName[] = L"<unknown>";
     HANDLE process = OpenProcess(PROCESS_ALL_ACCESS, FALSE, processID);
-
-    if (process != NULL)
+    if (!process)
     {
-        HMODULE mod;
-        DWORD cbNeeded;
-
-        if (EnumProcessModules(process, &mod, sizeof(mod),
-            &cbNeeded))
-        {
-            GetModuleBaseName(process, mod, processName,
-                sizeof(processName) / sizeof(wchar_t));
-        }
+        return;
     }
 
-    bool neededProcess = false;
-    for (size_t i = 0; i < sizeof(name) / (sizeof(TCHAR) * 2); ++i)
+    std::wstring processName(MAX_PATH, L'\0');
+    /*if (!GetModuleFileNameExW(process, 0, &processName[0], processName.length()))
     {
-        if (name[i] != processName[i])
-        {
-            neededProcess = false;
-            break;
-        }
-        else
-        {
-            neededProcess = true;
-        }
-
+        return;
+    }*/
+    DWORD nameSize = GetModuleBaseName(process, 0, &processName[0], processName.length());
+    if (!nameSize)
+    {
+        return;
     }
-    if (neededProcess)
+    processName.resize(nameSize);
+
+    if (processName == name)
     {
-        BOOL endProcess = TerminateProcess(
-            process,
-            1
-        );
+        BOOL endProcess = TerminateProcess(process, 1);
         if (!endProcess)
         {
-            printf("Could not terminate process with the chosen name\n");
+            std::cout << "Could not terminate process with the chosen name" << std::endl;
         }
         else
         {
-            printf("Process terminated successfully\n");
+            std::cout << "Process terminated successfully" << std::endl;
         }
     }
 
@@ -56,20 +41,19 @@ void KillProcessByName(DWORD processID, const wchar_t name[])
 
 int main()
 {
-    DWORD processes[1024], bytesReturned, processesAmount;
-    wchar_t processToKill[MAX_PATH];
+    DWORD processes[1024], bytesReturned;
+    std::wstring processToKill(MAX_PATH, L'\0');
     std::wcin >> processToKill;
 
     if (!EnumProcesses(processes, sizeof(processes), &bytesReturned))
     {
-        printf("Could not get processes ids");
+        std::cout << "Could not get processes ids" << std::endl;
     }
 
-    processesAmount = bytesReturned / sizeof(DWORD);
-
+    DWORD processesAmount = bytesReturned / sizeof(DWORD);
     for (size_t i = 0; i < processesAmount; ++i)
     {
-        if (processes[i] != 0)
+        if (processes[i])
         {
             KillProcessByName(processes[i], processToKill);
         }
