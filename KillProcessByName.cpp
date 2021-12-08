@@ -3,9 +3,9 @@
 #include <stdio.h>
 #include <psapi.h>
 
-void KillProcessByName(DWORD processID, TCHAR name[])
+void KillProcessByName(DWORD processID, const wchar_t name[])
 {
-    TCHAR processName[] = L"<unknown>";
+    wchar_t processName[] = L"<unknown>";
     HANDLE process = OpenProcess(PROCESS_ALL_ACCESS, FALSE, processID);
 
     if (process != NULL)
@@ -17,7 +17,7 @@ void KillProcessByName(DWORD processID, TCHAR name[])
             &cbNeeded))
         {
             GetModuleBaseName(process, mod, processName,
-                sizeof(processName) / sizeof(TCHAR));
+                sizeof(processName) / sizeof(wchar_t));
         }
     }
 
@@ -57,7 +57,7 @@ void KillProcessByName(DWORD processID, TCHAR name[])
 int main()
 {
     DWORD processes[1024], bytesReturned, processesAmount;
-    TCHAR processToKill[MAX_PATH];
+    wchar_t processToKill[MAX_PATH];
     std::wcin >> processToKill;
 
     if (!EnumProcesses(processes, sizeof(processes), &bytesReturned))
